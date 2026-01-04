@@ -4,8 +4,10 @@ import { Inter } from "next/font/google";
 import { UserProvider } from "@/common/contexts/UserContext";
 import { Provider } from "react-redux";
 import { store } from "./store";
+// @ts-ignore: side-effect import of CSS without type declarations
 import "./globals.css";
 import { ToastContainer, toast } from "react-toastify";
+// @ts-ignore: side-effect import of CSS without type declarations
 import "react-toastify/dist/ReactToastify.css";
 
 const inter = Inter({ subsets: ["latin"] });

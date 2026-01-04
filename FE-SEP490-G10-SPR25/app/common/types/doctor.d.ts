@@ -1,4 +1,4 @@
- interface IDoctor extends IUser {
+interface IDoctor extends IUser {
   academicTitle: string;
   degree: string;
   currentWork?: string;
@@ -8,6 +8,14 @@
   numberOfExamination: number;
   rating: number;
   ratingCount: number;
+}
+
+export interface Doctor {
+  id: string | number;
+  name: string;
+  specialtyName?: string;
+  avatarUrl?: string;
+  // add other fields as needed
 }
 
 

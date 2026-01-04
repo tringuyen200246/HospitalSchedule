@@ -1,8 +1,9 @@
 import { About } from "./components/About";
-import { SpecialtyList } from "@/guest/components/SpecialtyList";
+import SpecialtyList from "@/guest/components/SpecialtyList";
+const SpecialtyListAny = SpecialtyList as any;
 import { specialtyService } from "@/common/services/specialtyService";
 import { feedbackService } from "@/common/services/feedbackService";
-import { DoctorList } from "@/guest/components/DoctorList";
+import DoctorList from "@/guest/components/DoctorList";
 import { TabsGroup } from "@/common/components/TabsGroup";
 import ListService from "@/guest/components/ListService";
 import { PostList } from "@/guest/components/PostList";
@@ -10,6 +11,10 @@ import FeedbackList from "@/guest/components/FeedbackList";
 import VideoPlayer from "./components/VideoPlayer";
 import SymptomPopup from "../patient/appointment-booking/SymptomPopup";
 import { getPostList } from "@/common/services/postService";
+
+interface IDoctor {
+  [key: string]: any;
+}
 
 const GuestHomePage = async ({ isGuest = true }: { isGuest: boolean }) => {
   const specialties = await specialtyService.getSpecialtyList();
@@ -83,7 +88,7 @@ const GuestHomePage = async ({ isGuest = true }: { isGuest: boolean }) => {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-16 mb-8 bg-gradient-to-r from-cyan-500 to-white bg-clip-text text-transparent">
             Khám phá các chuyên khoa nổi bật
           </h2>
-          <SpecialtyList items={specialties} displayView="slider" />
+          <SpecialtyListAny specialties={specialties} displayView="slider" />
         </div>
 
         <div className="bg-white rounded-3xl mt-10 py-10 shadow-2xl w-full mx-auto">
@@ -96,7 +101,7 @@ const GuestHomePage = async ({ isGuest = true }: { isGuest: boolean }) => {
             </h1>
             <TabsGroup<IDoctor>
               tabs={doctorTabs}
-              RenderComponent={DoctorList}
+              RenderComponent={DoctorList as any}
               displayView="grid"
               userType={isGuest ? "guest" : "patient"}
             />

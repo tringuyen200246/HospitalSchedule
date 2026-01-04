@@ -1,94 +1,42 @@
 "use client";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Carousel from "react-multi-carousel";
-import "react-multi-carousel/lib/styles.css";
+import { Specialty } from "@/common/types/specialty";
+import styles from "../../SpecialtyList.module.css";
 
 interface SpecialtyListProps {
-  items: ISpecialty[];
-  displayView?: string;
+  specialties: Specialty[];
 }
 
-const responsive = {
-  superLargeDesktop: {
-    breakpoint: { max: 4000, min: 1536 },
-    items: 5,
-  },
-  desktop: {
-    breakpoint: { max: 1536, min: 1024 },
-    items: 4,
-  },
-  tablet: {
-    breakpoint: { max: 1024, min: 640 },
-    items: 2,
-  },
-  mobile: {
-    breakpoint: { max: 640, min: 0 },
-    items: 1,
-  },
-};
+// Thay đổi URL ảnh: Trỏ về API Backend thay vì S3
+const imgUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5220"}/api/file`;
 
-export const SpecialtyList = ({ items, displayView }: SpecialtyListProps) => {
-  const imgUrl = process.env.NEXT_PUBLIC_S3_BASE_URL;
-
-  if (displayView === "slider") {
-    return (
-      <div className="w-full px-10 py-6">
-        <Carousel
-          responsive={responsive}
-          infinite
-          autoPlaySpeed={3000}
-          containerClass="carousel-container"
-          itemClass="px-4"
-        >
-          {items.map((specialty, index) => (
-            <Link
-              key={index}
-              href={`specialties/${specialty.specialtyId}`}
-              className="p-6 flex flex-col items-center cursor-pointer text-center border border-gray-300 rounded-md shadow-md bg-white"
-            >
-              <div className="w-20 h-20 flex items-center justify-center rounded-full border-2 border-cyan-500 p-4">
-                <Image
-                  src={`${imgUrl}/${specialty.image}`}
-                  alt={specialty.specialtyName}
-                  className="object-contain"
-                  width={60}
-                  height={60}
-                />
-              </div>
-              <h3 className="text-lg font-semibold mt-4 text-gray-700">
-                {specialty.specialtyName}
-              </h3>
-            </Link>
-          ))}
-        </Carousel>
-      </div>
-    );
-  }
-
-  // Default grid view
+const SpecialtyList: React.FC<SpecialtyListProps> = ({ specialties }) => {
   return (
-    <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-10 ">
-      {items.map((specialty, index) => (
+    <div className={styles.grid}>
+      {specialties.map((specialty) => (
         <Link
-          key={index}
-          href={`specialties/${specialty.specialtyId}`}
-          className="w-[250px] p-6 flex flex-col items-center cursor-pointer text-center border border-gray-300 rounded-md shadow-md bg-white"
+          href={`/guest/specialties/${specialty.id}`}
+          key={specialty.id}
+          className={styles.card}
         >
-          <div className="w-20 h-20 flex items-center justify-center rounded-full border-2 border-blue-500 p-4">
+          <div className={styles.imageWrapper}>
             <Image
-              src={`${imgUrl}/${specialty.image}`}
-              alt={specialty.specialtyName}
-              className="object-contain"
-              width={60}
-              height={60}
+              src={specialty.image ? `${imgUrl}/${specialty.image}` : "/images/service.png"}
+              alt={specialty.name}
+              fill
+              className={styles.image}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
-          <h3 className="text-lg font-semibold mt-4 text-gray-700">
-            {specialty.specialtyName}
-          </h3>
+          <div className={styles.content}>
+            <h3 className={styles.name}>{specialty.name}</h3>
+          </div>
         </Link>
       ))}
     </div>
   );
 };
+
+export default SpecialtyList;
