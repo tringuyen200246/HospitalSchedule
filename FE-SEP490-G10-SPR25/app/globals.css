@@ -18,9 +18,16 @@
 }
 
 body {
-  background-color: var(--background);
+  margin-top: 20px;
+  background: #eee;
   color: var(--foreground);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* global table styles */
+table th {
+  font-weight: 600;
+  background-color: #eeecfd !important;
 }
 
 @layer utilities {

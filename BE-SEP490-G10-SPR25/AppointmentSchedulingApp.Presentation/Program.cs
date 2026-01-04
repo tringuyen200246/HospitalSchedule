@@ -35,7 +35,8 @@ modelBuilder.EntitySet<ServiceDTO>("Services");
 modelBuilder.EntitySet<FeedbackDTO>("Feedbacks");
 modelBuilder.EntitySet<UserDTO>("Users");
 modelBuilder.EntitySet<DoctorScheduleDTO>("DoctorSchedules");
-
+//Đăng ký HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
 
 var provider = builder.Services.BuildServiceProvider();
 var config = provider.GetService<IConfiguration>();
@@ -49,8 +50,9 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin()
                .AllowAnyMethod()
                .AllowAnyHeader();
-    });   
+    });
 });
+
 
 // Cấu hình CORS tùy chỉnh cho SignalR
 builder.Services.AddCors(options =>
@@ -112,7 +114,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.SaveToken = true;
     options.RequireHttpsMetadata = false;
-    
+
     // Configure event handlers for JWT authentication
     options.Events = new JwtBearerEvents
     {
@@ -121,7 +123,7 @@ builder.Services.AddAuthentication(options =>
             // Log successful token validation
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
             logger.LogInformation("Token validated successfully");
-            
+
             // Ensure roles are properly handled from the token
             var userIdClaim = context.Principal.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim != null)
@@ -151,7 +153,7 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
-    
+
     options.TokenValidationParameters = new TokenValidationParameters()
     {
         ValidAudience = builder.Configuration["JwtAppsettings:Audience"],
@@ -206,7 +208,8 @@ builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
 builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
-builder.Services.AddScoped<IStorageService, StorageService >();
+//builder.Services.AddScoped<IStorageService, StorageService >();
+builder.Services.AddScoped<IStorageService, LocalStorageService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IDoctorScheduleService, DoctorScheduleService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
@@ -262,8 +265,8 @@ if (app.Environment.IsDevelopment())
 // Sử dụng chính sách CORS mới
 app.UseCors("AllowAll");
 app.MapGet("/healthz", () => "Healthy");
-
-// app.UseHttpsRedirection(); // Tạm thời vô hiệu hóa để tránh lỗi HTTPS port
+//upload picture
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 

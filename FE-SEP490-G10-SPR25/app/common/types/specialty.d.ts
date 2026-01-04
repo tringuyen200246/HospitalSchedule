@@ -1,6 +1,5 @@
- interface ISpecialty {
-  specialtyId: string 
-  specialtyName: string
-  image: string
-  description?: string
+export interface Specialty {
+  id: string | number;
+  name: string;
+  image?: string;
 }

@@ -22,6 +22,12 @@ const nextConfig = {
         protocol: "https",
         hostname: "randomuser.me",
       },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "5220",
+        pathname: "/uploads/**",
+      },
     ],
   },
   async redirects() {
