@@ -24,7 +24,7 @@ namespace AppointmentSchedulingApp.Application.IServices
         Task<bool> UpdateReservationStatusList(List<ReservationStatusDTO> reservationStatusDTOs);
         Task<List<ReservationDTO>> GetUpcomingReservationsAndMarkReminded();
 
-
+        Task<ReservationDTO> AddReservation(AddedReservationDTO reservationDTO);
         Task<bool> ReplaceDoctor(int reservationId, int doctorscheduleId);
 
     }

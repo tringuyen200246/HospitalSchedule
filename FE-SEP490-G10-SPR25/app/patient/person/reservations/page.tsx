@@ -9,10 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import { LoadingTable } from "@/common/components/LoadingTable";
 import { useSearchParams } from "next/navigation";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { useUser } from "@/common/contexts/UserContext";
 
 const ReservationPage = () => {

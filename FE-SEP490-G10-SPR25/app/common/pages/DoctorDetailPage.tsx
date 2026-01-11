@@ -8,7 +8,7 @@ import { doctorService } from "@/common/services/doctorService";
 import { Button } from "@/common/components/Button";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 
-// 1. Interface định nghĩa Props nhận vào từ file cha
+
 interface DoctorDetailPageProps {
   params: {
     doctorId: string;
@@ -16,17 +16,17 @@ interface DoctorDetailPageProps {
 }
 
 type DoctorDetail = {
-  userId: number;           // BE: UserId
-  userName: string;         // BE: UserName
+  userId: number;          
+  userName: string;        
   email: string;
-  phone: string;            // BE: Phone
+  phone: string;            
   avatarUrl?: string | null;
   gender: boolean;
-  specialtyNames: string[]; // BE: trả về mảng string
-  doctorDescription?: string | null; // BE: DoctorDescription
+  specialtyNames: string[]; 
+  doctorDescription?: string | null; 
   address?: string | null;
   
-  // Các trường chi tiết từ DoctorDetailDTO
+
   workExperience?: string | null;
   organization?: string | null;
   prize?: string | null;
@@ -34,12 +34,10 @@ type DoctorDetail = {
   trainingProcess?: string | null;
 };
 
-// Thay đổi URL ảnh
 const imgUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5220"}/api/uploads`;
 
-// 2. SỬA DÒNG NÀY: Nhận params từ props thay vì dùng useParams()
 const DoctorDetailPage = ({ params }: DoctorDetailPageProps) => {
-  const { doctorId } = params; // Lấy doctorId từ props truyền xuống
+  const { doctorId } = params; 
   
   const [doctor, setDoctor] = useState<DoctorDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,8 +47,6 @@ const DoctorDetailPage = ({ params }: DoctorDetailPageProps) => {
     const fetchDoctorDetail = async () => {
       try {
         if (doctorId) {
-          // Gọi API lấy chi tiết trực tiếp
-          // Đảm bảo convert sang Number vì API BE cần int
           const numericId = Number(doctorId);
           if (isNaN(numericId)) return;
 

@@ -5,10 +5,14 @@ import { useRouter } from "next/navigation";
 import { FaChevronRight } from "react-icons/fa";
 
 interface SpecialtyListProps {
-  items?: ISpecialty[];
+  items?: any[]; 
+  basePath?: string; 
 }
 
-export default function SpecialtyList({ items = [] }: SpecialtyListProps) {
+export default function SpecialtyList({ 
+  items = [], 
+  basePath = "/guest" 
+}: SpecialtyListProps) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState("name_asc");
@@ -17,7 +21,6 @@ export default function SpecialtyList({ items = [] }: SpecialtyListProps) {
   const ITEMS_PER_PAGE = 8;
   const imgUrl = process.env.NEXT_PUBLIC_S3_BASE_URL;
 
-  // SỬA LỖI: Dùng useMemo thay vì useEffect + useState để lọc dữ liệu
   const filteredItems = useMemo(() => {
     let data = Array.isArray(items) ? [...items] : [];
     
@@ -32,7 +35,6 @@ export default function SpecialtyList({ items = [] }: SpecialtyListProps) {
     return data;
   }, [items, search, sortBy]);
 
-  // Tính toán phân trang
   const totalItems = filteredItems.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const paginatedItems = filteredItems.slice(
@@ -42,7 +44,7 @@ export default function SpecialtyList({ items = [] }: SpecialtyListProps) {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
-    setCurrentPage(1); // Reset trang khi tìm kiếm
+    setCurrentPage(1); 
   };
 
   return (
@@ -85,7 +87,8 @@ export default function SpecialtyList({ items = [] }: SpecialtyListProps) {
                   <div 
                     key={s.specialtyId}
                     className="group relative h-56 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all border"
-                    onClick={() => router.push(`/guest/specialties/${s.specialtyId}`)}
+                    // SỬA: Dùng basePath thay vì cứng "/guest"
+                    onClick={() => router.push(`${basePath}/specialties/${s.specialtyId}`)}
                   >
                     <Image 
                       src={s.image ? `${imgUrl}/${s.image}` : "/images/service.png"} 

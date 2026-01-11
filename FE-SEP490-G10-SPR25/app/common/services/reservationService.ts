@@ -87,7 +87,23 @@ const reservationService = {
       return null;
     }
   },
+  // Tạo lịch không cần qua thanh toán
+async addReservation(reservation: any) { 
+    const response = await fetch(`${apiUrl}/api/Reservations`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(reservation),
+    });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "Đặt lịch thất bại");
+    }
+
+    return response.json();
+  },
   async validateSymptomsMatchSpecialtyAndService(
     symptoms: string,
     serviceOverview: string,

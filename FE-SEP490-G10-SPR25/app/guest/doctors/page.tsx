@@ -14,11 +14,11 @@ export default function GuestDoctorsPage({
   };
 }) {
 return (
-    <DoctorsLayout basePath="/patient">
+    <DoctorsLayout basePath="/guest">
       <DoctorsPage
-        isGuest={false}
-        basePath="/patient"
+        isGuest={true} 
+        basePath="/guest" 
         searchParams={searchParams}
       />
     </DoctorsLayout>
-  );} 
+);} 

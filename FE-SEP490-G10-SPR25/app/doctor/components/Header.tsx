@@ -9,7 +9,6 @@ import { useUser } from '@/common/contexts/UserContext';
 import { logout } from '@/common/services/authService';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 export default function Header() {
   const { toggleMobileSidebar } = useSidebar();

@@ -4,10 +4,18 @@ import { useRouter, usePathname } from "next/navigation";
 import Select, { SingleValue, GroupBase, OptionProps } from "react-select";
 import Image from "next/image";
 
+// ... (Giữ nguyên các interface IFieldConfig, HomeSearchProps và typeLabelMap)
 interface IFieldConfig {
   label: string;
   value: string;
   placeholder: string;
+}
+
+interface ISearchOption {
+  label: string;
+  value: string;
+  image?: string;
+  type: string;
 }
 
 interface HomeSearchProps {
@@ -30,12 +38,18 @@ const HomeSearch = ({
   const router = useRouter();
   const pathname = usePathname();
   const [searchField, setSearchField] = useState<string>(defaultField);
-  const [selectedOption, setSelectedOption] = useState<ISearchOption | null>(
-    null
-  );
+  const [selectedOption, setSelectedOption] = useState<ISearchOption | null>(null);
+  
+  // SỬA LỖI HYDRATION: Thêm state mounted
+  const [mounted, setMounted] = useState(false);
+
   const imgUrl = process.env.NEXT_PUBLIC_S3_BASE_URL;
 
-  // Reset state when path changes
+  // SỬA LỖI HYDRATION: Set mounted = true khi component đã load ở client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     setSelectedOption(null);
     setSearchField(defaultField);
@@ -85,6 +99,7 @@ const HomeSearch = ({
     );
   }, [searchField, fields]);
 
+  // ... (Giữ nguyên customSingleValue, customOption, formatGroupLabel)
   const customSingleValue = ({ data }: { data: ISearchOption }) => (
     <div className="flex items-center gap-2 overflow-hidden">
       {data.image && (
@@ -130,11 +145,12 @@ const HomeSearch = ({
     </div>
   );
 
+  // SỬA LỖI HYDRATION: Không render Select khi chưa mounted
+  if (!mounted) return null;
+
   return (
     <div className="w-full px-4 flex justify-center">
       <div className="w-full max-w-4xl flex flex-row gap-1 items-center">
-        {" "}
-        {/* Select Field */}
         <div className="w-full md:w-auto md:min-w-[100px]">
           <select
             value={searchField}
@@ -151,9 +167,10 @@ const HomeSearch = ({
             ))}
           </select>
         </div>
-        {/* Search Box */}
         <div className="min-w-[300px]">
           <Select
+            // SỬA LỖI HYDRATION: Thêm instanceId để ID đồng nhất giữa server/client
+            instanceId="home-search-select" 
             options={searchField === "all" ? groupedOptions : filteredOptions}
             placeholder={placeholder}
             onChange={handleSelect}
@@ -168,7 +185,7 @@ const HomeSearch = ({
             styles={{
               control: (base) => ({
                 ...base,
-                minHeight: "40px", // Giảm chiều cao cho hộp Select
+                minHeight: "40px",
                 boxShadow: "none",
                 borderColor: "#D1D5DB",
                 "&:hover": { borderColor: "#374151" },
@@ -179,7 +196,7 @@ const HomeSearch = ({
               }),
               valueContainer: (base) => ({
                 ...base,
-                height: "40px", // Giảm chiều cao cho phần chứa giá trị
+                height: "40px",
                 display: "flex",
                 alignItems: "center",
                 overflow: "hidden",

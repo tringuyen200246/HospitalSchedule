@@ -16,6 +16,8 @@ import { specialtyService } from "@/common/services/specialtyService";
 import { doctorService } from "@/common/services/doctorService";
 import { serviceService } from "@/common/services/serviceService";
 import HomeSearch from "./HomeSearch";
+import { ISpecialty } from "@/common/types/specialty";
+import { IDoctor } from "@/common/types/doctor";
 const Navbar: React.FC = () => {
   const [isShowMobileMenu, setIsShowMobileMenu] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -25,8 +27,8 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const specialties = await specialtyService.getSpecialtyList();
-        const doctors = await doctorService.getDoctorList();
+       const specialties = await specialtyService.getAllSpecialties();
+        const doctors = await doctorService.getAllDoctors();;
         const services = await serviceService.getAllServices();
 
         const suggestedData = [

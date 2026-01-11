@@ -3,11 +3,18 @@ import React, { useEffect, useState } from "react";
 import DoctorList from "../../guest/components/DoctorList"; // Đảm bảo đúng đường dẫn
 import { doctorService } from "../services/doctorService";
 import { IDoctor } from "../types/doctor";
+
 interface DoctorsPageProps {
   isGuest?: boolean;
+  basePath?: string; // <--- 1. Thêm prop basePath
+  searchParams?: any; // Thêm searchParams để khớp với code gọi ở page cha
 }
 
-const DoctorsPage = ({ isGuest = false }: DoctorsPageProps) => {
+const DoctorsPage = ({ 
+  isGuest = false, 
+  basePath = "/guest", // <--- 2. Mặc định là /guest nếu không truyền
+  searchParams 
+}: DoctorsPageProps) => {
   const [doctors, setDoctors] = useState<IDoctor[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,8 +45,12 @@ const DoctorsPage = ({ isGuest = false }: DoctorsPageProps) => {
     >
       <div className="absolute inset-0 bg-black bg-opacity-50 z-20"></div>
       <div className="relative z-30 w-full max-w-7xl mx-auto px-4">
-  
-        <DoctorList items={doctors} showLoginButton={isGuest} />
+        {/* 3. Truyền basePath xuống DoctorList */}
+        <DoctorList 
+          items={doctors} 
+          showLoginButton={isGuest} 
+          basePath={basePath} 
+        />
       </div>
     </div>
   );

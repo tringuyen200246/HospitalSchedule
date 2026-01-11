@@ -7,8 +7,6 @@ import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import { SignalRProvider } from "@/common/contexts/SignalRContext";
 
-import "../globals.css";
-
 import { SidebarProvider } from "../common/contexts/SidebarContext"
 import { ThemeProvider } from "../common/contexts/ThemeContext"
 import Backdrop from "../doctor/components/Backdrop"

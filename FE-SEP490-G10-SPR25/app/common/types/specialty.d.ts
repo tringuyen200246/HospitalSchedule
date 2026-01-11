@@ -1,5 +1,7 @@
 // app/common/types/specialty.d.ts
-interface ISpecialty {
+
+// Thêm "export" vào trước interface
+export interface ISpecialty {
   specialtyId: number;
   specialtyName: string;
   description?: string;
@@ -8,8 +10,8 @@ interface ISpecialty {
   ratingCount?: number;
 }
 
-interface ISpecialtyDetail extends ISpecialty {
-  services?: IService[];
-  doctors?: IRelatedDoctor[];
+export interface ISpecialtyDetail extends ISpecialty {
+  services?: any[]; 
+  doctors?: any[];  
   overview?: string;
 }

@@ -19,6 +19,7 @@ import {
 } from "../redux/bookingSlice";
 import { restoreSuggestion } from "../redux/bookingThunks";
 import type { RootState, AppDispatch } from "@/store";
+import { ISpecialty } from "@/common/types/specialty";
 
 const SpecialtySelector = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -68,7 +69,7 @@ const SpecialtySelector = () => {
   useEffect(() => {
     const fetchSpecialties = async () => {
       try {
-        const specialtyList = await specialtyService.getSpecialtyList();
+        const specialtyList = await specialtyService.getAllSpecialties();
         dispatch(setSpecialties(specialtyList));
       } catch (error) {
         console.error("Error fetching specialties:", error);

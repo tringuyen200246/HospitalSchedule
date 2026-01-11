@@ -1,5 +1,6 @@
 // app/common/services/specialtyService.ts
 import axios from "axios";
+import { ISpecialty, ISpecialtyDetail } from "../types/specialty";
 
 const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/Specialties`;
 

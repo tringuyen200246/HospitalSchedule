@@ -152,7 +152,7 @@ namespace AppointmentSchedulingApp.Application.Services
         }
 
 
-         public async Task<List<ReservationDTO>> GetUpcomingReservationsAndMarkReminded()
+        public async Task<List<ReservationDTO>> GetUpcomingReservationsAndMarkReminded()
         {
             var now = DateTime.UtcNow.AddHours(7);
 
@@ -213,10 +213,10 @@ namespace AppointmentSchedulingApp.Application.Services
 
                 // Lấy thông tin thanh toán của reservation cũ
                 var payment = await unitOfWork.PaymentRepository.Get(p => p.ReservationId == reservationId);
-                
+
                 // Lưu thông tin của lịch hẹn hiện tại
                 var oldDoctorScheduleId = reservation.DoctorScheduleId;
-                
+
                 // Tạo một bản ghi mới với thông tin từ bản ghi cũ nhưng với bác sĩ mới
                 var newReservation = new Reservation
                 {
@@ -231,11 +231,11 @@ namespace AppointmentSchedulingApp.Application.Services
                     CreatedByUserId = reservation.UpdatedByUserId, // Sử dụng UpdatedByUserId hiện tại làm người tạo
                     UpdatedByUserId = reservation.UpdatedByUserId
                 };
-                
+
                 // Thêm bản ghi mới với bác sĩ mới
                 await unitOfWork.ReservationRepository.AddAsync(newReservation);
                 await unitOfWork.CommitAsync(); // Commit để lấy ID của reservation mới
-                
+
                 // Nếu có thông tin thanh toán, sao chép thông tin thanh toán sang reservation mới
                 if (payment != null)
                 {
@@ -250,18 +250,18 @@ namespace AppointmentSchedulingApp.Application.Services
                         ReceptionistId = payment.ReceptionistId,
                         TransactionId = payment.TransactionId
                     };
-                    
+
                     await unitOfWork.PaymentRepository.AddAsync(newPayment);
                 }
-                
+
                 // Cập nhật bản ghi cũ thành trạng thái đã hủy
                 reservation.Status = "Đã hủy";
                 reservation.CancellationReason = "Bác sĩ được chuyển sang lịch khám khác";
                 reservation.UpdatedDate = DateTime.Now;
-                
+
                 unitOfWork.ReservationRepository.Update(reservation);
                 await unitOfWork.CommitAsync();
-                
+
                 Console.WriteLine($"Đã chuyển ca khám thành công: Từ bác sĩ (ScheduleId: {oldDoctorScheduleId}) sang bác sĩ (ScheduleId: {doctorscheduleId})");
                 return true;
             }
@@ -271,6 +271,30 @@ namespace AppointmentSchedulingApp.Application.Services
                 Console.WriteLine($"Lỗi trong ReplaceDoctor: {ex.Message}");
                 Console.WriteLine($"StackTrace: {ex.StackTrace}");
                 return false;
+            }
+        }
+        public async Task<ReservationDTO> AddReservation(AddedReservationDTO reservationDTO)
+        {
+            try
+            {
+                // Map từ DTO sang Entity
+                var reservation = mapper.Map<Reservation>(reservationDTO);
+
+                reservation.Status = "Đang chờ"; 
+                reservation.CreatedDate = DateTime.Now;
+                reservation.UpdatedDate = DateTime.Now;
+
+                // Lưu vào DB
+                await unitOfWork.ReservationRepository.AddAsync(reservation);
+                await unitOfWork.CommitAsync();
+
+                // Trả về kết quả
+                return mapper.Map<ReservationDTO>(reservation);
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi nếu cần
+                throw new Exception("Lỗi khi tạo lịch hẹn: " + ex.Message);
             }
         }
     }

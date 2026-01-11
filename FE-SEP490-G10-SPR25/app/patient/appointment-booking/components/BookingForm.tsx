@@ -1,19 +1,15 @@
-// BookingForm.tsx
+// app/patient/appointment-booking/components/BookingForm.tsx
+"use client";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useCallback, useState, useEffect } from "react";
-import { emailService } from "@/common/services/emailService";
-import { Provider } from "react-redux";
-import { store } from "@/store";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/common/contexts/UserContext";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import {
   setIsShowBookingForm,
   setCurrentStep,
-  setServiceId,
   setServices,
+  setServiceId,
   setSpecialties,
   setSpecialtyId,
   setDoctors,
@@ -32,10 +28,25 @@ import PatientInfor from "./PatientInfor";
 import BookingInfor from "./BookingInfor";
 import BookingConfirmation from "./BookingConfirmation";
 import BookingStepper from "./BookingStepper";
-import { handleVNPayPayment } from "@/common/services/vnPayService";
+// import { handleVNPayPayment } from "@/common/services/vnPayService"; 
+import reservationService from "@/common/services/reservationService";
 import { toast } from "react-toastify";
-import ReactDOMServer from "react-dom/server";
 import * as signalR from "@microsoft/signalr";
+import { useQueryClient } from "@tanstack/react-query"; 
+
+// --- 1. CẬP NHẬT INTERFACE ---
+// Thêm trường priorExaminationImg để chứa chuỗi Base64 ảnh
+interface IAddedReservation {
+  patientId?: string | number;
+  doctorScheduleId?: string | number;
+  reason?: string;
+  appointmentDate?: string;
+  createdByUserId?: string | number;
+  updatedByUserId?: string | number;
+  status?: string;
+  paymentStatus?: string;
+  priorExaminationImg?: string | null; // <--- MỚI THÊM
+}
 
 const BookingForm = () => {
   const dispatch = useDispatch();
@@ -43,17 +54,19 @@ const BookingForm = () => {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { user } = useUser();
+  const queryClient = useQueryClient(); 
 
+  // SignalR Logic
   useEffect(() => {
     if (!user?.userId) return;
 
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`/hubs/notifications?userId=${user.userId}`)
+      .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/hubs/notifications?userId=${user.userId}`)
       .withAutomaticReconnect()
       .build();
 
     connection.on("ScheduleConflict", (data) => {
-      alert(data.message);
+      toast.warning(data.message);
     });
 
     connection
@@ -98,29 +111,66 @@ const BookingForm = () => {
           s.appointmentDate === scheduleDateTime
       );
 
-      const service = services.find(
-        (s) => String(s.serviceId) === String(serviceId)
-      );
+      // --- 2. LẤY ẢNH TỪ LOCAL STORAGE ---
+      // Component FileUpload đã lưu base64 vào đây
+      const uploadedImage = localStorage.getItem("uploadedFileBase64");
 
+      // Tạo object reservation
       const reservation: IAddedReservation = {
         patientId: selectedPatient?.userId,
-        doctorScheduleId: matchedSchedule?.doctorScheduleId?.toString(),
+        doctorScheduleId: matchedSchedule?.doctorScheduleId, 
         reason: symptoms || "",
         appointmentDate: matchedSchedule?.appointmentDate,
         createdByUserId: selectedPatient?.userId,
         updatedByUserId: selectedPatient?.userId,
+        status: "Đang chờ", 
+        paymentStatus: "Chưa thanh toán",
+        
+        // --- 3. GÁN ẢNH VÀO REQUEST ---
+        priorExaminationImg: uploadedImage || null 
       };
+
+      // ============================================================
+      // VNPAY (TẠM ẨN)
+      // ============================================================
+      /*
       await handleVNPayPayment({
         payerId: selectedPatient?.userId,
         reservation,
         paymentMethod: "VNPay",
         amount: service?.price,
       });
-      toast.info("Đang chuyển hướng đến cổng thanh toán VNPay...");
+      */
 
-      setTimeout(() => confirmCancel(), 1000);
-    } catch (err) {
-      toast.error(error || "Đã xảy ra lỗi");
+      // ============================================================
+      // ĐẶT LỊCH THÔNG THƯỜNG
+      // ============================================================
+      console.log("Submitting reservation data:", reservation);
+      
+      const result = await reservationService.addReservation(reservation as any);
+      console.log("Reservation success:", result);
+
+      // Xóa cache để làm mới danh sách
+      await queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      await queryClient.invalidateQueries({ queryKey: ["statusList"] });
+
+      toast.success("Đặt lịch khám thành công!");
+      
+      // --- 4. DỌN DẸP LOCAL STORAGE SAU KHI THÀNH CÔNG ---
+      localStorage.removeItem("uploadedFileBase64");
+      localStorage.removeItem("uploadedFileName");
+
+      // Đợi 1.5s rồi đóng form và chuyển trang
+      setTimeout(() => {
+        confirmCancel();
+        router.push("/patient/person/reservations"); 
+      }, 1500);
+
+    } catch (err: any) {
+      console.error("Booking error:", err);
+      const errorMessage = err?.response?.data?.message || err.message || "Đã xảy ra lỗi khi đặt lịch";
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       dispatch(setIsSubmitting(false));
     }
@@ -153,8 +203,13 @@ const BookingForm = () => {
     dispatch(setSymptoms(""));
     dispatch(setIsLoading(false));
     dispatch(setIsShowRestoreSuggestion(false));
-    router.push("/patient");
-  }, [dispatch]);
+
+    // --- 5. DỌN DẸP LOCAL STORAGE KHI HỦY FORM ---
+    // Để tránh ảnh cũ hiện lại ở lần đặt sau
+    localStorage.removeItem("uploadedFileBase64");
+    localStorage.removeItem("uploadedFileName");
+    
+  }, [dispatch, router]);
 
   if (!isShowBookingForm) return null;
 
@@ -261,7 +316,7 @@ const BookingForm = () => {
       )}
 
       {error && (
-        <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-[60]">
           <strong className="font-bold">Lỗi!</strong>
           <span className="block sm:inline"> {error}</span>
         </div>

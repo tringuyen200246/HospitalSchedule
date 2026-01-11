@@ -33,5 +33,14 @@ export const doctorService = {
     // SỬA: URL endpoint là api/Doctors/{id}, không phải api/Doctors/details/{id}
     const response = await axios.get(`${apiUrl}/${id}`);
     return response.data;
+  },
+  getDoctorListByServiceId: async (serviceId: number): Promise<IDoctor[]> => {
+    try {
+      const response = await axios.get(`${apiUrl}/GetDoctorListByServiceId/${serviceId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching doctors by service ID:", error);
+      return [];
+    }
   }
 };

@@ -12,7 +12,7 @@ namespace AppointmentSchedulingApp.Presentation.Controllers
         private IReservationService reservationService;
         private IStorageService storageService;
 
-        public ReservationsController(IReservationService reservationService, IStorageService storageService) 
+        public ReservationsController(IReservationService reservationService, IStorageService storageService)
         {
             this.reservationService = reservationService;
             this.storageService = storageService;
@@ -24,7 +24,7 @@ namespace AppointmentSchedulingApp.Presentation.Controllers
         {
             return Ok(await reservationService.GetListReservation());
         }
-       
+
 
         [HttpGet("{patientId}/{status}/{sortBy}")]
         public async Task<IActionResult> GetListReservationByFilter(int patientId, string? status = "Đang chờ", string? sortBy = "Giá dịch vụ tăng dần")
@@ -105,7 +105,7 @@ namespace AppointmentSchedulingApp.Presentation.Controllers
                 var result = await reservationService.UpdateReservationStatusList(reservations);
                 return Ok(result);
             }
-            catch (Exception ex)   
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
@@ -181,5 +181,23 @@ namespace AppointmentSchedulingApp.Presentation.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> AddReservation([FromBody] AddedReservationDTO reservationDTO)
+        {
+            if (reservationDTO == null)
+            {
+                return BadRequest("Dữ liệu không hợp lệ.");
+            }
+
+            try
+            {
+                var result = await reservationService.AddReservation(reservationDTO);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

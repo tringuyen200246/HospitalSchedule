@@ -22,5 +22,6 @@ namespace AppointmentSchedulingApp.Application.DTOs
         public int CreatedByUserId { get; set; }
 
         public int UpdatedByUserId { get; set; }
+        public string? PriorExaminationImg { get; set; }
     }
 }
