@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import DoctorList from "../../guest/components/DoctorList"; // Đảm bảo đúng đường dẫn
 import { doctorService } from "../services/doctorService";
-
+import { IDoctor } from "../types/doctor";
 interface DoctorsPageProps {
   isGuest?: boolean;
 }
@@ -38,7 +38,7 @@ const DoctorsPage = ({ isGuest = false }: DoctorsPageProps) => {
     >
       <div className="absolute inset-0 bg-black bg-opacity-50 z-20"></div>
       <div className="relative z-30 w-full max-w-7xl mx-auto px-4">
-        {/* SỬA TẠI ĐÂY: doctors={doctors} đổi thành items={doctors} */}
+  
         <DoctorList items={doctors} showLoginButton={isGuest} />
       </div>
     </div>

@@ -1,20 +1,20 @@
-// app/common/types/doctor.d.ts
-interface IDoctor {
-  doctorId: number;
-  doctorName: string;
-  image: string;
-  expertise?: string;
-  academicTitle?: string;
-  degree?: string;
+// --- FILE: app/common/types/doctor.ts ---
+export interface IDoctor {
+  // Các trường khớp với Backend .NET
+  userId: number;           // Thay cho doctorId
+  userName: string;         // Thay cho doctorName
+  email?: string;
+  phone?: string;
+  avatarUrl?: string | null; // Thay cho image
+  specialtyNames?: string[]; // Backend trả về mảng tên chuyên khoa
+  
+  // Các trường hỗ trợ hiển thị/logic khác
+  specialtyId?: number;      // Dùng để lọc (nếu có)
   rating?: number;
   ratingCount?: number;
-  specialtyId?: number;
-}
-
-interface IDoctorDetail extends IDoctor {
-  specialtyName?: string;
-  introduction?: string;
-  trainingProcess?: string;
-  achievements?: string[];
-  services?: IService[];
+  
+  // Các trường chi tiết (Optional)
+  gender?: boolean;
+  address?: string;
+  doctorDescription?: string;
 }

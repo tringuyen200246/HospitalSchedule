@@ -5,6 +5,19 @@ import { useRouter } from "next/navigation";
 import { FaChevronRight } from "react-icons/fa";
 import RatingStars from "../../common/components/RatingStars";
 import { specialtyService } from "../../common/services/specialtyService";
+// Lưu ý: Hãy đảm bảo interface IDoctor trong file types khớp với các trường bên dưới
+// import { IDoctor } from "../../common/types/doctor"; 
+
+// Định nghĩa nhanh Interface để khớp với Backend (Bạn nên cập nhật file types/doctor.ts theo cái này)
+interface IDoctor {
+  userId: number;           // BE trả về userId
+  userName: string;         // BE trả về userName
+  avatarUrl?: string | null;// BE trả về avatarUrl
+  specialtyNames?: string[];// BE trả về mảng tên chuyên khoa
+  specialtyId?: number;     // Dùng để lọc (cần đảm bảo BE trả về cái này trong ListDTO)
+  rating?: number;
+  ratingCount?: number;
+}
 
 interface DoctorListProps {
   items?: IDoctor[];
@@ -20,14 +33,17 @@ export default function DoctorList({ items = [], showLoginButton = false }: Doct
 
   const router = useRouter();
   const ITEMS_PER_PAGE = 6;
-  const imgUrl = process.env.NEXT_PUBLIC_S3_BASE_URL;
+  
+  // URL ảnh: Ưu tiên lấy từ env S3, nếu không có thì dùng localhost/api/uploads
+  const imgUrl = process.env.NEXT_PUBLIC_S3_BASE_URL || `${process.env.NEXT_PUBLIC_API_URL}/api/uploads`;
 
-  // Lấy danh sách chuyên khoa cho sidebar (Chỉ chạy 1 lần)
+  // Lấy danh sách chuyên khoa cho sidebar
   useEffect(() => {
     const fetchSpecialties = async () => {
       try {
         const data = await specialtyService.getAllSpecialties();
-        setSpecialties(data.map(s => ({ id: s.specialtyId, name: s.specialtyName })));
+        // Cần đảm bảo data trả về đúng map
+        setSpecialties(data.map((s: any) => ({ id: s.specialtyId || s.id, name: s.specialtyName || s.name })));
       } catch (error) {
         console.error("Error fetching specialties:", error);
       }
@@ -35,28 +51,32 @@ export default function DoctorList({ items = [], showLoginButton = false }: Doct
     fetchSpecialties();
   }, []);
 
-  // SỬA LỖI: Dùng useMemo để lọc dữ liệu bác sĩ một cách an toàn
+  // Lọc và Sắp xếp dữ liệu
   const filteredDoctors = useMemo(() => {
     let data = Array.isArray(items) ? [...items] : [];
 
+    // 1. Tìm kiếm theo tên (Sửa doctorName -> userName)
     if (search) {
-      data = data.filter(d => d.doctorName?.toLowerCase().includes(search.toLowerCase()));
+      data = data.filter(d => d.userName?.toLowerCase().includes(search.toLowerCase()));
     }
 
+    // 2. Lọc theo chuyên khoa (Cần BE trả về specialtyId trong List)
     if (selectedSpecialty) {
       data = data.filter(d => d.specialtyId === selectedSpecialty);
     }
 
+    // 3. Sắp xếp
     if (sortBy === "rating") {
       data.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     } else if (sortBy === "name_asc") {
-      data.sort((a, b) => (a.doctorName || "").localeCompare(b.doctorName || ""));
+      // Sửa doctorName -> userName
+      data.sort((a, b) => (a.userName || "").localeCompare(b.userName || ""));
     }
 
     return data;
   }, [items, search, selectedSpecialty, sortBy]);
 
-  // Tính toán phân trang
+  // Phân trang
   const totalItems = filteredDoctors.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const paginatedDoctors = filteredDoctors.slice(
@@ -66,6 +86,7 @@ export default function DoctorList({ items = [], showLoginButton = false }: Doct
 
   return (
     <div className="relative w-full pt-16">
+      {/* Search Bar */}
       <div className="flex justify-center mb-3 relative z-40">
         <div className="relative flex items-center w-[400px] bg-white rounded-full shadow-md border border-gray-300 overflow-hidden">
           <div className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 whitespace-nowrap">
@@ -135,20 +156,34 @@ export default function DoctorList({ items = [], showLoginButton = false }: Doct
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {paginatedDoctors.map((doctor) => (
                   <div 
-                    key={doctor.doctorId}
+                    // SỬA: Dùng userId làm key
+                    key={doctor.userId}
                     className="bg-white shadow-md rounded-2xl p-4 cursor-pointer hover:shadow-xl transition-all border group"
-                    onClick={() => router.push(`/guest/doctors/${doctor.doctorId}`)}
+                    // SỬA: Link điều hướng dùng userId
+                    onClick={() => router.push(`/guest/doctors/${doctor.userId}`)}
                   >
-                    <div className="relative h-48 w-full mb-3 overflow-hidden rounded-xl">
+                    <div className="relative h-48 w-full mb-3 overflow-hidden rounded-xl bg-gray-100">
+                      {/* SỬA: Dùng avatarUrl và fallback ảnh */}
                       <Image 
-                        src={doctor.image ? `${imgUrl}/${doctor.image}` : "/images/doctor.png"} 
-                        alt={doctor.doctorName} 
+                        src={doctor.avatarUrl ? `${imgUrl}/${doctor.avatarUrl}` : "/images/doctor.png"} 
+                        // SỬA: Dùng userName cho alt
+                        alt={doctor.userName || "Bác sĩ"} 
                         fill 
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-300" 
                       />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-800 line-clamp-1">{doctor.doctorName}</h3>
-                    <p className="text-blue-600 text-sm font-semibold mb-2">{doctor.expertise || "Bác sĩ chuyên khoa"}</p>
+                    
+                    {/* SỬA: Dùng userName */}
+                    <h3 className="text-lg font-bold text-gray-800 line-clamp-1">
+                        {doctor.userName}
+                    </h3>
+
+                    {/* SỬA: Join mảng specialtyNames */}
+                    <p className="text-blue-600 text-sm font-semibold mb-2 line-clamp-1">
+                        {doctor.specialtyNames?.join(", ") || "Chuyên khoa khác"}
+                    </p>
+
                     <div className="flex items-center text-yellow-400">
                       <RatingStars rating={doctor.rating || 0} />
                       <span className="text-xs text-gray-500 ml-2">({doctor.ratingCount || 0} đánh giá)</span>

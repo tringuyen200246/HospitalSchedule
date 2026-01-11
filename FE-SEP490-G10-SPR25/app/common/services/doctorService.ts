@@ -1,6 +1,7 @@
 // app/common/services/doctorService.ts
 import axios from "axios";
-
+import { IDoctor } from "../types/doctor";
+import { IDoctorDetailDTO } from "../types/doctorDetail";
 const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/Doctors`;
 
 export const doctorService = {
@@ -28,8 +29,9 @@ export const doctorService = {
     return response.data;
   },
 
-  getDoctorDetailById: async (id: number): Promise<IDoctorDetail> => {
-    const response = await axios.get(`${apiUrl}/details/${id}`);
+  getDoctorDetailById: async (id: number): Promise<IDoctorDetailDTO> => {
+    // SỬA: URL endpoint là api/Doctors/{id}, không phải api/Doctors/details/{id}
+    const response = await axios.get(`${apiUrl}/${id}`);
     return response.data;
   }
 };
