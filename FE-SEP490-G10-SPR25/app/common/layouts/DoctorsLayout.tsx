@@ -22,7 +22,7 @@ export default async function DoctorsLayout({
   }));
 
   const specialties: ICheckboxOption[] = (
-    await specialtyService.getSpecialtyList()
+    await specialtyService.getAllSpecialties()
   ).map((sp) => {
     return {
       label: sp.specialtyName,

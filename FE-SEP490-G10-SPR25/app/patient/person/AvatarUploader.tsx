@@ -3,14 +3,13 @@
 import React, { useState, useRef } from "react";
 import { Button, Image, message } from "antd";
 import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
+import api from "../../common/services/api"; // Import api instance đã cấu hình
 
 interface AvatarUploaderProps {
-  avatarUrl?: string;
+  avatarUrl?: string; // URL này BE trả về (ví dụ: https://localhost:5220/uploads/...)
   userId: string;
   onUploaded?: () => void;
 }
-
-const imgUrl = process.env.NEXT_PUBLIC_S3_BASE_URL;
 
 const AvatarUploader: React.FC<AvatarUploaderProps> = ({
   avatarUrl,
@@ -21,8 +20,24 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpload = () => {
+  // Hàm xử lý hiển thị nguồn ảnh
+  const getAvatarSrc = () => {
+    if (preview) return preview;
+    if (!avatarUrl) return undefined;
+
+    // Nếu avatarUrl đã là đường dẫn tuyệt đối (chứa http/https), dùng trực tiếp
+    if (avatarUrl.startsWith("http") || avatarUrl.startsWith("/")) {
+        return `${avatarUrl}?t=${Date.now()}`;
+    }
+
+    // Fallback: Nếu BE chỉ trả về tên file (ví dụ: abc.jpg) thì mới ghép với BASE_URL
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5220";
+    return `${baseUrl}/uploads/${avatarUrl}?t=${Date.now()}`;
+  };
+
+  const handleUpload = async () => {
     if (selectedFile && userId) {
+      // Logic đổi tên file giữ nguyên
       const ext = selectedFile.name.substring(
         selectedFile.name.lastIndexOf(".")
       );
@@ -34,22 +49,24 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
       const formData = new FormData();
       formData.append("files", renamedFile);
 
-      fetch("http://localhost:5220/api/Storage/UploadFiles", {
-        method: "POST",
-        body: formData,
-      })
-        .then((res) => res.json())
-        .then(() => {
-          message.success("Cập nhật ảnh đại diện thành công!");
-          setSelectedFile(null);
-          setPreview(null);
-          if (fileInputRef.current) fileInputRef.current.value = "";
-          onUploaded?.(); // Gọi callback
-        })
-        .catch((err) => {
-          console.error("Upload error:", err);
-          message.error("Có lỗi khi upload ảnh");
+      try {
+        // Sửa: Dùng api instance thay vì fetch hardcode
+        // Đường dẫn API cần khớp với Controller của bạn (Storage/UploadFiles)
+        await api.post("/api/Storage/UploadFiles", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         });
+
+        message.success("Cập nhật ảnh đại diện thành công!");
+        setSelectedFile(null);
+        setPreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        onUploaded?.(); // Gọi callback để cha load lại data
+      } catch (err) {
+        console.error("Upload error:", err);
+        message.error("Có lỗi khi upload ảnh");
+      }
     }
   };
 
@@ -74,7 +91,8 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
       <div className="w-[100px] h-[100px] overflow-hidden rounded-lg">
         <Image
           className="object-cover w-full h-full"
-          src={preview || `${imgUrl}/${avatarUrl}?t=${Date.now()}`}
+          src={getAvatarSrc()}
+          fallback="https://via.placeholder.com/100" // Ảnh hiển thị khi lỗi hoặc null
           alt="avatar patient"
           width={100}
           height={100}
@@ -103,7 +121,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
               onClick={handleUpload}
               style={{ marginLeft: 8 }}
             >
-              Cập nhật ảnh
+              Cập nhật
             </Button>
             <Button
               danger
@@ -111,7 +129,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
               onClick={handleRemove}
               style={{ marginLeft: 8 }}
             >
-              Xoá ảnh
+              Hủy
             </Button>
           </>
         )}

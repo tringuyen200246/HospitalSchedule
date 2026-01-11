@@ -17,7 +17,7 @@ interface IDoctor {
 }
 
 const GuestHomePage = async ({ isGuest = true }: { isGuest: boolean }) => {
-  const specialties = await specialtyService.getSpecialtyList();
+  const specialties = await specialtyService.getAllSpecialties();
 
   const posts = await getPostList();
   const feedbacks = await feedbackService.getFeedbackList();

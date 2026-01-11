@@ -1,22 +1,20 @@
-interface IDoctor extends IUser {
-  academicTitle: string;
-  degree: string;
-  currentWork?: string;
-  doctorDescription: string;
-  specialtyNames: string[];
-  numberOfService: number;
-  numberOfExamination: number;
-  rating: number;
-  ratingCount: number;
+// app/common/types/doctor.d.ts
+interface IDoctor {
+  doctorId: number;
+  doctorName: string;
+  image: string;
+  expertise?: string;
+  academicTitle?: string;
+  degree?: string;
+  rating?: number;
+  ratingCount?: number;
+  specialtyId?: number;
 }
 
-export interface Doctor {
-  id: string | number;
-  name: string;
+interface IDoctorDetail extends IDoctor {
   specialtyName?: string;
-  avatarUrl?: string;
-  // add other fields as needed
+  introduction?: string;
+  trainingProcess?: string;
+  achievements?: string[];
+  services?: IService[];
 }
-
-
-

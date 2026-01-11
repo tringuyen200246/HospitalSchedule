@@ -1,57 +1,51 @@
+// app/common/services/specialtyService.ts
+import axios from "axios";
 
-const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}`;
+const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/Specialties`;
 
 export const specialtyService = {
-  async getNumberOfSpecialties(): Promise<number> {
+  // Lấy số lượng chuyên khoa (Sử dụng OData)
+  getNumberOfSpecialties: async (): Promise<number> => {
     try {
-      const url = `${apiUrl}/odata/Specialties/$count`;
-      
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json'
-        },
-        cache: 'no-store'
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/odata/Specialties/$count`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
       });
-      
-      
-      if (!res.ok) {
-        console.error(`Error response for specialty count: ${res.statusText}`);
-        throw new Error(`Error: ${res.status}`);
-      }
-      
-      const count = await res.json();
-      return count;
+      return response.ok ? response.json() : 0;
     } catch (error) {
-      console.error('Error getting number of specialties:', error);
-      return 0; // Return 0 instead of throwing error
+      console.error("Error fetching specialties count:", error);
+      return 0;
     }
   },
-  
-  async getSpecialtyList(): Promise<ISpecialty[]> {
+
+  // Lấy danh sách chuyên khoa (Sửa tên từ getSpecialtyList -> getAllSpecialties)
+  getAllSpecialties: async (): Promise<ISpecialty[]> => {
     try {
-      const url = `${apiUrl}/api/Specialties`;
-      
-      const res = await fetch(url, {
-        method: 'GET',
+      const response = await fetch(apiUrl, {
+        method: "GET",
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-        cache: 'no-store'
+        cache: "no-store",
       });
-      
-      
-      if (!res.ok) {
-        console.error(`Error response for specialty list: ${res.statusText}`);
-        throw new Error(`Error: ${res.status}`);
-      }
-      
-      const data = await res.json();
-      return data;
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      return await response.json();
     } catch (error) {
-      console.error('Error fetching specialty list:', error);
-      return []; // Return empty array instead of throwing error
+      console.error("Error fetching specialties:", error);
+      return [];
     }
+  },
+
+  getSpecialtyById: async (id: number): Promise<ISpecialty> => {
+    const response = await axios.get(`${apiUrl}/${id}`);
+    return response.data;
+  },
+
+  getSpecialtyDetailById: async (id: number): Promise<ISpecialtyDetail> => {
+    const response = await axios.get(`${apiUrl}/details/${id}`);
+    return response.data;
   }
 };
